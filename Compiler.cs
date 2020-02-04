@@ -2,9 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
-using System.IO;
-using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Compiler_Project
 {
@@ -17,8 +16,8 @@ namespace Compiler_Project
 
         public static string inputPath = "";
         public static string outputPath = "";
-        //public static string OCCCompileString = "";
         public static List<string> AdditionalOCC = new List<string>();
+        public static Dictionary<int, string> OCCs = new Dictionary<int, string>();
         public static OrderedDictionary TextTextures = new OrderedDictionary();
 
         public string CompileTextTextures(OrderedDictionary textTextures)
@@ -46,26 +45,13 @@ namespace Compiler_Project
             return outputString;
         }
 
-        public void Compile(ChildTag child, string inputPath, string outputPath = @"C:\Temp\ConfigOut.cfg")
+        public void Compile(ChildTag child, string compInputPath, string outputPath = @"C:\Temp\ConfigOut.cfg")
         {
+            inputPath = compInputPath;
             var textTextureOutput = CompileTextTextures(TextTextures);
             var outputString = UnpackProperties(child);
 
-            //Console.WriteLine(inputPath + "\\" + AdditionalOCC[0]);
-            if (AdditionalOCC.Any())
-            {
-                //string compileString = "";
-                foreach (var occ in AdditionalOCC)
-                {
-                    Console.WriteLine(inputPath + "\\" + occ);
-                    var file = System.IO.File.ReadAllText(inputPath + "\\" + occ);
-                    //Console.WriteLine(file);
-                    var components = GetComponents(file);
-                    /*OCCCompileString += GetCompileString(components, inputPath, outputPath);
-                    Console.WriteLine(OCCCompileString);*/
-                    //Console.WriteLine(components);
-                }
-            }
+            System.Threading.Thread.Sleep(1000);
 
             if (System.IO.File.Exists(outputPath))
             {
@@ -98,28 +84,30 @@ namespace Compiler_Project
         public static List<string> GetComponents(string contents)
         {
             List<string> ParentTags = new List<string>() {
-                "mesh"
+                "Mesh"
                 // todo: expand
             };
 
             List<string> components = new List<string>();
-            using (StringReader reader = new StringReader(contents))
+
+            if (contents != "")
             {
-                var s = "";
-
-                while ((s = reader.ReadLine()) != null)
+                foreach (var parentTag in ParentTags)
                 {
-                    var component = OMSI2_Tags.Methods.getBetween(s, "var ", " = new ");
-
-                    if (!components.Contains(component) && component != "" && ParentTags.Contains(component))
-                        components.Add(component);
+                    MatchCollection matches = Regex.Matches(contents, "var ([^\\s]*?) = new " + parentTag + "\\(");
+                    foreach (Match match in matches)
+                    {
+                        foreach (Capture capture in match.Groups[1].Captures)
+                        {
+                            components.Add(capture.ToString());
+                        }
+                    }
                 }
             }
-
             return components;
         }
 
-        public static string GetCompileString(List<string> components, string input, string output = "")
+        public static string GetCompileString(List<string> components, string output = "")
         {
             if (output == "")
             {
@@ -128,7 +116,7 @@ namespace Compiler_Project
             string compileString = "Compiler comp = new Compiler();";
             foreach (var component in components)
             {
-                compileString += "comp.Compile(" + component + ", @\"" + input + "\", @\"" + output + "\");";
+                compileString += "comp.Compile(" + component + ", @\"" + inputPath + "\", @\"" + output + "\");";
             }
 
             return compileString;

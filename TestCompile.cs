@@ -18,7 +18,6 @@ namespace Compiler_Project
         {
             Compiler.TextTextures.Add("testTextTexture", new TextTexture("textTextureVariable", "theFontName", 20, 30, 1, 123, 87, 21));
             Compiler.TextTextures.Add("testTextTexture2", new TextTexture("textTextureVariable2", "theFontName2", 25, 40, 1, 233, 24, 164));
-            Compiler.AdditionalOCC.Add("Controller.occ");
 
             var mesh = new Mesh("path/to/mesh.o3d");
             mesh.mouseevent = "aMouseEvent";
@@ -49,6 +48,8 @@ namespace Compiler_Project
 
             mesh.addChild(material);
             mesh.addChild(material2);
+
+            Compiler.AdditionalOCC.Add("Controller.occ");
 
             Compiler comp = new Compiler();
             comp.Compile(mesh, @"C:\Users\Administrator\Desktop\test.txt");
