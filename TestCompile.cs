@@ -1,21 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using OMSI2_Tags;
+﻿using OMSI2_Tags;
 
 namespace Compiler_Project
 {
     class TestCompile
     {
-        public TestCompile()
-        {
-
-        }
-
         public static void CompileMe()
         {
+
             Compiler.TextTextures.Add("testTextTexture", new TextTexture("textTextureVariable", "theFontName", 20, 30, 1, 123, 87, 21));
             Compiler.TextTextures.Add("testTextTexture2", new TextTexture("textTextureVariable2", "theFontName2", 25, 40, 1, 233, 24, 164));
 
