@@ -19,7 +19,7 @@ namespace Compiler_Project
         public void Compile(ChildTag child, string compInputPath, string outputPath = @"C:\Temp\ConfigOut.cfg")
         {
             InputPath = compInputPath;
-            //var textTextureOutput = CompileTextTextures(TextTextures);
+            var textTextureOutput = CompileTextTextures(TextTextures);
             var outputString = UnpackProperties(child);
 
             if (File.Exists(outputPath))
@@ -28,10 +28,16 @@ namespace Compiler_Project
             }
             else
             {
-                //File.WriteAllText(outputPath, textTextureOutput + outputString);
-                File.WriteAllText(outputPath, outputString);
+                File.WriteAllText(outputPath, textTextureOutput + outputString);
+                //File.WriteAllText(outputPath, outputString);
             }
         }
+
+        //private int getMeshStart(string opString)
+        //{
+        //    Match match = Regex.Match(opString, @"\[mesh\]");
+        //    return match.Index;
+        //}
 
         public string UnpackProperties(ChildTag child)
         {
@@ -55,7 +61,7 @@ namespace Compiler_Project
         {
             var output = "";
             if (prop.GetValue(child) == null) return output;
-            if (prop.GetValue(child).GetType() != typeof(List<ChildTag>))
+            if (prop.GetValue(child).GetType() != typeof(List<ChildTag>))   // If property is not a list of childtags, aka, not a set of children for a component
             {
                 if (prop.GetValue(child).GetType() != typeof(bool))
                 {
@@ -63,13 +69,16 @@ namespace Compiler_Project
                     {
                         if (prop.Name != "Tag")
                         {
-                            if (Char.IsUpper(prop.Name[0]) == false)
+                            if (Char.IsUpper(prop.Name[0]) == false)    // If the first letter of the property name is not a capital, then it is a header property
                             {
                                 output += (FormatNewline(FormatTag(prop.Name) + "\n" + prop.GetValue(child) + "\n"));
                             }
                             else
                             {
-                                output += (prop.GetValue(child) + "\n");
+                                if (prop.GetValue(child).ToString() != "-999")
+                                {
+                                    output += (prop.GetValue(child) + "\n");
+                                }
                             }
                         }
                         else
@@ -170,9 +179,10 @@ namespace Compiler_Project
         public static List<string> GetComponents(string contents)
         {
             var parentTags = new List<string>() {
-                "Mesh",
-                "CTC"
+                //"CTC",
+                "Mesh"
                 // todo: expand
+                // Order displayed is order they are printed in
             };
 
             var components = new List<string>();
@@ -181,8 +191,17 @@ namespace Compiler_Project
             foreach (var parentTag in parentTags)
             {
                 MatchCollection matches = Regex.Matches(contents, "var ([^\\s]*?) = new " + parentTag + "\\(");
+
+                //var firstMesh = -1;
                 foreach (Match match in matches)
                 {
+                    //if (parentTag.Equals("Mesh") && firstMesh < 0)
+                    //{
+                    //    firstMesh += 1;
+                    //}
+
+                    //components.Add("!!" + match.Value + "!!");
+
                     foreach (Capture capture in match.Groups[1].Captures)
                     {
                         components.Add(capture.ToString());

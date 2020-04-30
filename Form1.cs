@@ -23,7 +23,6 @@ namespace Compiler_Project
 
         private void Form1_Load(object sender, EventArgs e)
         {
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -109,6 +108,8 @@ namespace Compiler_Project
             var dummy = new Mesh("");
             textBox2.Text = "";
 
+            //var anim = new Mesh.NewAnim("origin_trans", 13, 12, 11, "anim_trans", "the-anim-variable", 3.14, new List<int>(){ 1, 2, 3 });
+
             var codeProvider = CodeDomProvider.CreateProvider("CSharp");
             var Output = "Out.exe";
             var parameters = InitParameters();
@@ -118,6 +119,12 @@ namespace Compiler_Project
             contents = contents.Replace(@"\", @"\\");
             var configComponents = Compiler.GetComponents(contents);
 
+            textBox2.Text += "Found "+ configComponents.Count +" Components:" + Environment.NewLine;
+            foreach (var configComponent in configComponents)
+            {
+                textBox2.Text += (configComponents.IndexOf(configComponent)+1) + ": " + configComponent + Environment.NewLine;
+            }
+
             _saveCfg.Filter = @"Model Config Files|*.cfg";
             _saveCfg.ShowDialog();
 
@@ -126,7 +133,7 @@ namespace Compiler_Project
                 var filename = _saveCfg.FileName.Replace(@"\", @"\\");
                 Compiler.OutputPath = filename;
                 var compileString = Compiler.GetCompileString(configComponents, filename);
-                var inputText = "using System; using OMSI2_Tags; namespace Compiler_Project { class CompilerClass { static void Main(string[] args) {" + contents + compileString + "}}}";
+                var inputText = "using System; using System.Collections.Generic; using OMSI2_Tags; namespace Compiler_Project { class CompilerClass { static void Main(string[] args) {" + contents + compileString + "}}}";
                 var results = codeProvider.CompileAssemblyFromSource(parameters, inputText);
 
                 if (results.Errors.Count > 0)
@@ -157,6 +164,8 @@ namespace Compiler_Project
                     {
                         File.Delete(Output);
                     }
+
+                    textBox2.Text += Environment.NewLine + "Compile Complete!";
                 }
             }
         }
@@ -170,7 +179,6 @@ namespace Compiler_Project
                 .Where(a => !parameters.ReferencedAssemblies.Contains(a.Location))
                 .Select(a => a.Location);
             parameters.ReferencedAssemblies.AddRange(assemblies.ToArray());
-
             return parameters;
         }
 
